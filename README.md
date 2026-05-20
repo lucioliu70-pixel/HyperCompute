@@ -1,27 +1,20 @@
 # HyperCompute MVP
 
-## 一键安装并运行
+## 一键启动
+- Linux/macOS: `make bootstrap`
+- Windows: `start_windows.bat` 或 `start_windows.ps1`
 
-### Linux / macOS
+## 使用者流程
+1. 创建用户 `/users`
+2. 创建 API Key `/api-keys`
+3. 调用 `/v1/chat/completions`
 
-```bash
-bash scripts/one_click_install_and_run.sh
-```
+## 贡献者流程
+1. 申请贡献者 `POST /contributors/apply`
+2. 管理员审批 `POST /admin/contributors/{user_id}/approve`
+3. 下载并运行 node-daemon（见 `node-daemon/README.md`）
+4. 管理后台查看 `/admin/nodes`、`/admin/contributors`
+5. 收益和积分：`/contributor/earnings`、`/contributor/points`
 
-> 轻量模式（更少服务）：
-
-```bash
-bash scripts/one_click_install_and_run.sh --lite
-```
-
-### macOS 双击运行
-
-仓库根目录提供了 `一键安装并运行.command`，双击后会自动执行安装与部署脚本。
-
-## 常用命令
-
-```bash
-make logs    # 查看日志
-make down    # 停止服务
-make reset   # 重置环境
-```
+## 测试
+`bash scripts/integration_test.sh`
