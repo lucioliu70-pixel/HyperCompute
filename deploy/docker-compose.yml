@@ -1,0 +1,16 @@
+services:
+  postgres: {image: postgres:16, environment: {POSTGRES_PASSWORD: postgres, POSTGRES_DB: hypercompute}, ports:["5432:5432"]}
+  redis: {image: redis:7, ports:["6379:6379"]}
+  nats: {image: nats:2, ports:["4222:4222"]}
+  prometheus: {image: prom/prometheus, ports:["9090:9090"]}
+  grafana: {image: grafana/grafana, ports:["3001:3000"]}
+  auth: {build: {context: .., dockerfile: auth/Dockerfile}, depends_on:[postgres], ports:["8086:8086"]}
+  gateway: {build: {context: .., dockerfile: gateway/Dockerfile}, depends_on:[auth,wallet,billing,settlement,scheduler], ports:["8080:8080"]}
+  scheduler: {build: {context: .., dockerfile: scheduler/Dockerfile}, depends_on:[postgres], ports:["8081:8081"]}
+  wallet: {build: {context: .., dockerfile: wallet/Dockerfile}, depends_on:[postgres], ports:["8082:8082"]}
+  billing: {build: {context: .., dockerfile: billing/Dockerfile}, depends_on:[postgres], ports:["8083:8083"]}
+  settlement: {build: {context: .., dockerfile: settlement/Dockerfile}, depends_on:[postgres], ports:["8087:8087"]}
+  risk: {build: {context: .., dockerfile: risk/Dockerfile}, depends_on:[postgres], ports:["8084:8084"]}
+  model-service: {build: {context: .., dockerfile: model-service/Dockerfile}, depends_on:[postgres], ports:["8088:8088"]}
+  control-plane: {build: {context: .., dockerfile: control-plane/Dockerfile}, depends_on:[postgres], ports:["8085:8085"], environment:[ADMIN_TOKEN=admin-token]}
+  admin-web: {build: {context: .., dockerfile: admin-web/Dockerfile}, ports:["3000:3000"]}
