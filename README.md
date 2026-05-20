@@ -1,8 +1,12 @@
 # HyperCompute MVP
 
 ## 一键启动
-- Linux/macOS: `make bootstrap`
-- Windows: `start_windows.bat` 或 `start_windows.ps1`
+- Linux/macOS 一键安装部署 + 运行：`bash scripts/one_click_install_and_run.sh`
+- Linux/macOS 轻量模式：`bash scripts/one_click_install_and_run.sh --lite`
+- Windows 一键安装部署 + 运行（PowerShell）：`powershell -ExecutionPolicy Bypass -File scripts/one_click_install_and_run_windows.ps1`
+- Windows 轻量模式（PowerShell）：`powershell -ExecutionPolicy Bypass -File scripts/one_click_install_and_run_windows.ps1 -Lite`
+- Windows 双击启动：`one_click_install_and_run_windows.bat`
+- 仅执行基础引导（旧方式）：`make bootstrap` 或 `start_windows.bat`
 
 ## 使用者流程
 1. 创建用户 `/users`
