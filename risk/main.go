@@ -1,0 +1,3 @@
+package main
+import("context";"encoding/json";"net/http";"github.com/go-chi/chi/v5";"github.com/jackc/pgx/v5/pgxpool")
+func main(){db,_:=pgxpool.New(context.Background(),"postgres://postgres:postgres@postgres:5432/hypercompute?sslmode=disable");r:=chi.NewRouter();r.Get("/health",func(w http.ResponseWriter,r *http.Request){w.Write([]byte("ok"))});r.Get("/metrics",func(w http.ResponseWriter,r *http.Request){w.Write([]byte("risk_up 1"))});r.Post("/events",func(w http.ResponseWriter,r *http.Request){var b map[string]any;json.NewDecoder(r.Body).Decode(&b);_,_=db.Exec(r.Context(),"insert into risk_events(event_type,payload,created_at) values($1,$2,now())",b["event_type"],b["payload"]);json.NewEncoder(w).Encode(map[string]any{"ok":true})});http.ListenAndServe(":8084",r)}

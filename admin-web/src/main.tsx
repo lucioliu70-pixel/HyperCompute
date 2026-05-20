@@ -1,0 +1,2 @@
+import React from 'react';import ReactDOM from 'react-dom/client';import {Layout,Menu} from 'antd';
+ReactDOM.createRoot(document.getElementById('root')!).render(<Layout><Layout.Header><Menu theme='dark' mode='horizontal' items={[{key:'1',label:'Dashboard'},{key:'2',label:'Nodes'},{key:'3',label:'Models'},{key:'4',label:'Wallet'},{key:'5',label:'Billing'},{key:'6',label:'Earnings'},{key:'7',label:'Withdrawals'},{key:'8',label:'Risk Events'}]}/></Layout.Header><Layout.Content style={{padding:24}}>HyperCompute Admin Web</Layout.Content></Layout>);
