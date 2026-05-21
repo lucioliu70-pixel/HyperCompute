@@ -14,6 +14,10 @@ log() {
   printf '\n[HyperCompute] %s\n' "$1"
 }
 
+warn() {
+  printf '\n[HyperCompute][WARN] %s\n' "$1"
+}
+
 require_command() {
   local cmd="$1"
   if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -22,31 +26,42 @@ require_command() {
   return 0
 }
 
+run_as_root() {
+  if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+    "$@"
+  elif require_command sudo; then
+    sudo "$@"
+  else
+    warn "当前用户不是 root，且未安装 sudo，无法自动安装 Docker。"
+    return 1
+  fi
+}
+
 install_docker_linux() {
   if require_command apt-get; then
     log "检测到 Debian/Ubuntu，尝试自动安装 Docker（需要 sudo 权限）"
-    sudo apt-get update
-    sudo apt-get install -y ca-certificates curl gnupg lsb-release
-    sudo install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+    run_as_root apt-get update
+    run_as_root apt-get install -y ca-certificates curl gnupg lsb-release
+    run_as_root install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | run_as_root gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    run_as_root chmod a+r /etc/apt/keyrings/docker.gpg
     echo \
       "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
       $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-      sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
-    sudo apt-get update
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    sudo usermod -aG docker "$USER" || true
+      run_as_root tee /etc/apt/sources.list.d/docker.list >/dev/null
+    run_as_root apt-get update
+    run_as_root apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    run_as_root usermod -aG docker "$USER" || true
     return 0
   fi
 
   if require_command yum; then
     log "检测到 RHEL/CentOS，尝试自动安装 Docker（需要 sudo 权限）"
-    sudo yum install -y yum-utils
-    sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    sudo yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    sudo systemctl enable --now docker
-    sudo usermod -aG docker "$USER" || true
+    run_as_root yum install -y yum-utils
+    run_as_root yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    run_as_root yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    run_as_root systemctl enable --now docker
+    run_as_root usermod -aG docker "$USER" || true
     return 0
   fi
 
@@ -87,6 +102,11 @@ ensure_docker() {
     echo "暂不支持自动安装 Docker 的系统：$os"
     exit 1
   fi
+
+  if ! require_command docker; then
+    echo "Docker 安装步骤已执行，但仍未检测到 docker 命令。请重新打开终端后重试。"
+    exit 1
+  fi
 }
 
 ensure_compose() {
@@ -110,7 +130,7 @@ start_docker_service_if_needed() {
 
   if require_command systemctl; then
     log "Docker 守护进程未运行，尝试启动。"
-    sudo systemctl start docker || true
+    run_as_root systemctl start docker || true
   fi
 
   if ! docker info >/dev/null 2>&1; then
